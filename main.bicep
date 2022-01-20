@@ -1,6 +1,5 @@
 var functionPrefix = 'python-kurs'
 param location string = resourceGroup().location
-param storagePrefix
 
 resource storageaccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
   name: '${functionPrefix}-${location}'

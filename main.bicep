@@ -59,11 +59,11 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageaccount};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys('${storageaccount.id}', '${storageaccount.apiVersion}').keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageaccount};EndpointSuffix=${storageaccount.properties.primaryEndpoints.web};AccountKey=${listKeys('${storageaccount.id}', '${storageaccount.apiVersion}').keys[0].value}'
         }
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageaccount};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys('${storageaccount.id}', '${storageaccount.apiVersion}').keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageaccount};EndpointSuffix=${storageaccount.properties.primaryEndpoints.web};AccountKey=${listKeys('${storageaccount.id}', '${storageaccount.apiVersion}').keys[0].value}'
         }
         {
           name: 'FUNCTIONS_EXTENSION_VERSION'

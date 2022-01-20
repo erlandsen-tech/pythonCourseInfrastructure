@@ -59,7 +59,6 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
-          vale: ${environment().}
           value: 'DefaultEndpointsProtocol=https;AccountName=${storageaccount};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys('${storageaccount.id}', '${storageaccount.apiVersion}').keys[0].value}'
         }
         {
@@ -86,7 +85,6 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
     }
     httpsOnly: true
   }
-  dependsOn: storageaccount
 }
 resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
   name: 'pythonkurs-keyvault'

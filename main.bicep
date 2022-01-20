@@ -1,14 +1,34 @@
-var functionPrefix = 'pythonkurs'
+@description('Specifies region of all resources.')
 param location string = resourceGroup().location
 
-resource storageaccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
-  name: '${functionPrefix}${location}'
-  location: resourceGroup().location
+@description('Suffix for function app, storage account, and key vault names.')
+param appNameSuffix string = uniqueString(resourceGroup().id)
+
+@description('Key Vault SKU name.')
+param keyVaultSku string = 'Standard'
+
+@description('Storage account SKU name.')
+param storageSku string = 'Standard_LRS'
+
+var functionAppName = 'fn-${appNameSuffix}'
+var appServicePlanName = 'FunctionPlan'
+var appInsightsName = 'AppInsights'
+var storageAccountName = 'fnstor${replace(appNameSuffix, '-', '')}'
+var functionNameComputed = 'MyHttpTriggeredFunction'
+var functionRuntime = 'dotnet'
+var keyVaultName = 'kv${replace(appNameSuffix, '-', '')}'
+var functionAppKeySecretName = 'FunctionAppHostKey'
+
+resource storageAccount 'Microsoft.Storage/storageAccounts@2021-04-01' = {
+  name: storageAccountName
+  location: location
+  sku: {
+    name: storageSku
+  }
   kind: 'StorageV2'
   properties: {
     supportsHttpsTrafficOnly: true
     encryption: {
-      keySource: 'Microsoft.Storage'
       services: {
         file: {
           keyType: 'Account'
@@ -19,17 +39,15 @@ resource storageaccount 'Microsoft.Storage/storageAccounts@2021-02-01' = {
           enabled: true
         }
       }
+      keySource: 'Microsoft.Storage'
     }
     accessTier: 'Hot'
   }
-  sku: {
-    name: 'Standard_LRS'
-  }
 }
 
-resource appInsights 'Microsoft.Insights/components@2020-02-02-preview' = {
-  name: '${functionPrefix}-appi'
-  location: resourceGroup().location
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: appInsightsName
+  location: location
   kind: 'web'
   properties: {
     Application_Type: 'web'
@@ -38,20 +56,19 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02-preview' = {
   }
 }
 
-resource plan 'Microsoft.Web/serverfarms@2021-02-01' = {
-  name: '${functionPrefix}-plan'
-  location: resourceGroup().location
+resource plan 'Microsoft.Web/serverfarms@2020-12-01' = {
+  name: appServicePlanName
+  location: location
+  kind: 'functionapp'
   sku: {
     name: 'Y1'
   }
   properties: {}
 }
 
-
-
 resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
-  name: '${functionPrefix}-${location}'
-  location: resourceGroup().location
+  name: functionAppName
+  location: location
   kind: 'functionapp'
   properties: {
     serverFarmId: plan.id
@@ -59,51 +76,53 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageaccount};EndpointSuffix=${storageaccount.properties.primaryEndpoints.web};AccountKey=${listKeys('${storageaccount.id}', '${storageaccount.apiVersion}').keys[0].value}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value}'
         }
         {
           name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storageaccount};EndpointSuffix=${storageaccount.properties.primaryEndpoints.web};AccountKey=${listKeys('${storageaccount.id}', '${storageaccount.apiVersion}').keys[0].value}'
-        }
-        {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~3'
-        }
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: 'InstrumentationKey=${appInsights.properties.InstrumentationKey}'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${listKeys(storageAccount.id, storageAccount.apiVersion).keys[0].value}'
         }
         {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
           value: appInsights.properties.InstrumentationKey
         }
         {
+          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+          value: 'InstrumentationKey=${appInsights.properties.InstrumentationKey}'
+        }
+        {
           name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'python'
+          value: functionRuntime
+        }
+        {
+          name: 'FUNCTIONS_EXTENSION_VERSION'
+          value: '~3'
         }
       ]
     }
     httpsOnly: true
   }
 }
+
 resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
-  name: 'pythonkurs-keyvault'
-  location: resourceGroup().location
+  name: keyVaultName
+  location: location
   properties: {
     tenantId: subscription().tenantId
     sku: {
       family: 'A'
-      name: 'standard'
+      name: keyVaultSku
     }
     accessPolicies: []
   }
 }
 
 resource keyVaultSecret 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
-  name: '${keyVault.name}/functionAppHostKey'
+  name: '${keyVault.name}/${functionAppKeySecretName}'
   properties: {
     value: listKeys('${functionApp.id}/host/default', functionApp.apiVersion).functionKeys.default
   }
 }
 
 output functionAppHostName string = functionApp.properties.defaultHostName
+output functionName string = functionNameComputed

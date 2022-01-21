@@ -2,7 +2,7 @@
 param location string = resourceGroup().location
 
 @description('Suffix for function app, storage account, and key vault names.')
-param appNameSuffix string = uniqueString(resourceGroup().id)
+param appNameSuffix string = 'aypteuk6zziv2'
 
 @description('Key Vault SKU name.')
 param keyVaultSku string = 'Standard'
@@ -61,7 +61,7 @@ resource plan 'Microsoft.Web/serverfarms@2020-12-01' = {
   location: location
   kind: 'functionapp'
   sku: {
-    name: 'Y1'
+    name: 'F1'
   }
   properties: {}
 }

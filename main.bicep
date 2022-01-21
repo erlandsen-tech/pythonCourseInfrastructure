@@ -61,7 +61,7 @@ resource plan 'Microsoft.Web/serverfarms@2020-12-01' = {
   location: location
   kind: 'functionapp'
   sku: {
-    name: 'F1'
+    name: 'B1'
   }
   properties: {}
 }

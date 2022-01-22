@@ -14,10 +14,10 @@ var functionAppName = 'fn-${appNameSuffix}'
 var appServicePlanName = 'FunctionPlan'
 var appInsightsName = 'AppInsights'
 var storageAccountName = 'fnstor${replace(appNameSuffix, '-', '')}'
-var functionNameComputed = 'MyHttpTriggeredFunction'
 var functionRuntime = 'dotnet'
 var keyVaultName = 'kv${replace(appNameSuffix, '-', '')}'
 var functionAppKeySecretName = 'FunctionAppHostKey'
+var repoUrl = 'https://github.com/varleg/pythonCourseFunctions'
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-04-01' = {
   name: storageAccountName
@@ -104,6 +104,15 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
   }
 }
 
+resource srcControls 'Microsoft.Web/sites/sourcecontrols@2021-02-01' = {
+  name: '${functionApp.name}/web'
+  properties: {
+    repoUrl: repoUrl
+    branch: 'main'
+    isManualIntegration: true
+  }
+}
+
 resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
   name: keyVaultName
   location: location
@@ -125,4 +134,3 @@ resource keyVaultSecret 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = {
 }
 
 output functionAppHostName string = functionApp.properties.defaultHostName
-output functionName string = functionNameComputed

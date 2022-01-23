@@ -63,7 +63,8 @@ resource plan 'Microsoft.Web/serverfarms@2020-12-01' = {
   sku: {
     name: 'B1'
   }
-  properties: {}
+  properties: {
+  }
 }
 
 resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
@@ -73,6 +74,7 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
   properties: {
     serverFarmId: plan.id
     siteConfig: {
+      linuxFxVersion: 'PYTHON|3.9'
       appSettings: [
         {
           name: 'AzureWebJobsStorage'

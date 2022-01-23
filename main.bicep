@@ -72,6 +72,7 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
   location: location
   kind: 'functionapp'
   properties: {
+    reserved: true
     serverFarmId: plan.id
     siteConfig: {
       linuxFxVersion: 'python|3.9'

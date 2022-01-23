@@ -2,7 +2,7 @@
 param location string = resourceGroup().location
 
 @description('Suffix for function app, storage account, and key vault names.')
-param appNameSuffix string = 'pythoncourseskyetec'
+param appNameSuffix string = 'pythonskyetec'
 
 @description('Key Vault SKU name.')
 param keyVaultSku string = 'Standard'

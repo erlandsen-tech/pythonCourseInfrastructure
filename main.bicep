@@ -107,15 +107,6 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
   }
 }
 
-resource srcControls 'Microsoft.Web/sites/sourcecontrols@2021-02-01' = {
-  name: '${functionApp.name}/web'
-  properties: {
-    repoUrl: repoUrl
-    branch: 'main'
-    isManualIntegration: true
-  }
-}
-
 resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
   name: keyVaultName
   location: location

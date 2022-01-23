@@ -17,7 +17,7 @@ var storageAccountName = 'fnstor${replace(appNameSuffix, '-', '')}'
 var functionRuntime = 'python'
 var keyVaultName = 'kv${replace(appNameSuffix, '-', '')}'
 var functionAppKeySecretName = 'FunctionAppHostKey'
-var repoUrl = 'https://github.com/varleg/pythonCourseFunctions'
+var repoUrl = 'https://github.com/erlandsen-tech/pythonCourseFunctions'
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2021-04-01' = {
   name: storageAccountName
@@ -104,6 +104,15 @@ resource functionApp 'Microsoft.Web/sites@2020-12-01' = {
       ]
     }
     httpsOnly: true
+  }
+}
+
+resource srcControls 'Microsoft.Web/sites/sourcecontrols@2021-02-01' = {
+  name: '${functionApp.name}/web'
+  properties: {
+    repoUrl: repoUrl
+    branch: 'main'
+    isManualIntegration: true
   }
 }
 
